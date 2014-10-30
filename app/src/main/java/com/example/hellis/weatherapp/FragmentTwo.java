@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.net.Uri;
 import android.os.Bundle;
+
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,60 +25,12 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 
-/**
- * A simple {@link android.app.Fragment} subclass.
- * Activities that contain this fragment must implement the
- *  interface
- * to handle interaction events.
- * Use the {@link FragmentTwo#newInstance} factory method to
- * create an instance of this fragment.
- *
- */
 public class FragmentTwo extends Fragment {
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
 
-    private static TextView textViewF2;
 
-    private OnFragmentTwoInteractionListener mListener;
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment FragmentTwo.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static FragmentTwo newInstance(String param1, String param2) {
-        FragmentTwo fragment = new FragmentTwo();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
     public FragmentTwo() {
         // Required empty public constructor
-    }
-
-
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
-
     }
 
     @Override
@@ -84,63 +38,40 @@ public class FragmentTwo extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_two, container, false);
-        DefaultHttpClient httpclient = new DefaultHttpClient(new BasicHttpParams());
-        HttpPost httppost = new HttpPost("https://query.yahooapis.com/v1/public/" +
-                "yql?q=select%20item.condition%20from%20weather.forecast%20where" +
-                "%20woeid%20%20in%20(select%20woeid%20from%20geo.places(1)" +
-                "%20where%20text%3D%22chicago%2C%20il%22)&format=json&env=store" +
-                "%3A%2F%2Fdatatables.org%2Falltableswithkeys");
-        // Depends on your web service
-        //httppost.setHeader("Content-type", "application/json");
 
+        DefaultHttpClient client = new DefaultHttpClient();
+        String url = "https://query.yahooapis.com/v1/public/yql?q=select%20item." +
+                "condition%20from%20weather.forecast%20where%20woeid%20%3D%2022180&" +
+                "format=json&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys";
+        HttpPost httpGet = new HttpPost(url );
         InputStream inputStream = null;
         String result = null;
         try {
-            HttpResponse response = httpclient.execute(httppost);
-            HttpEntity entity = response.getEntity();
+            HttpResponse execute = client.execute(httpGet);
+            InputStream content = execute.getEntity().getContent();
 
-            inputStream = entity.getContent();
-            // json is UTF-8 by default
-            //BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"), 8);
-            String line = "";
-            StringBuilder total = new StringBuilder();
-
-            // Wrap a BufferedReader around the InputStream
-            BufferedReader rd = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
-
-            // Read response until the end
-            while ((line = rd.readLine()) != null) {
-                total.append(line);
+            BufferedReader buffer = new BufferedReader(new InputStreamReader(content));
+            String s = "";
+            while ((s = buffer.readLine()) != null) {
+                result += s;
             }
-
-            // Return full string
-            result = total.toString();
         } catch (Exception e) {
-            // Oops
-        }
-        finally {
-            try{if(inputStream != null)inputStream.close();}catch(Exception squish){}
-        }
-        //JSONObject jObject = null;
-        //jObject = new JSONObject(result);
-        //String temperature; String description;
-        try {
-
-            JSONObject jObject = new JSONObject(result).getJSONObject("query").getJSONObject("results").
-                    getJSONObject("channel").getJSONObject("item").getJSONObject("condition");
-            //jObject=jObject.getString("results");
-            //assert jObject != null;
-            String temperature = jObject.getString("temp");
-            String description = jObject.getString("text");
-            TextView textView = (TextView)view.findViewById(R.id.textView2);
-            textView.setText(temperature);
-            TextView textView2 = (TextView)view.findViewById(R.id.textView3);
-            textView.setText(description);
-        } catch (JSONException e) {
             e.printStackTrace();
-            throw new RuntimeException(e);
         }
-        catch (NullPointerException e) {
+        Log.i("", result);
+        try {
+            Log.i("", "parsing json");
+            JSONObject weather = new JSONObject(result).getJSONObject("query").
+                    getJSONObject("results").getJSONObject("channel").
+                    getJSONObject("item").getJSONObject("condition");
+            Log.i("", "item fetched");
+            TextView textView  = (TextView)view.findViewById(R.id.textView2);
+            textView.setText(weather.getString("temp"));
+            TextView textView2  = (TextView)view.findViewById(R.id.textView3);
+            textView2.setText(weather.getString("text"));
+
+            Log.i("", "written to screen");
+        } catch (Exception e) {;
             e.printStackTrace();
         }
 
@@ -148,45 +79,6 @@ public class FragmentTwo extends Fragment {
         //textViewF2 = (TextView) view.findViewById(R.id.textView);
         return view;
 
-    }
-
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentTwoInteraction(uri);
-        }
-    }
-
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        try {
-            mListener = (OnFragmentTwoInteractionListener) activity;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString()
-                    + " must implement OnFragmentTwoInteractionListener");
-        }
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mListener = null;
-    }
-
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
-    public interface OnFragmentTwoInteractionListener {
-        // TODO: Update argument type and name
-        public void onFragmentTwoInteraction(Uri uri);
     }
 
 }

@@ -8,7 +8,7 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 
-public class MyActivity extends Activity implements FragmentOne.getZip
+public class MyActivity extends Activity implements FragmentOne
 {
 
     private FragmentOne fragOne;
