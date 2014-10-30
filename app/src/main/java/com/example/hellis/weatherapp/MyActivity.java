@@ -8,7 +8,7 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 
-public class MyActivity extends Activity implements FragmentOne.OnFragmentOneInteractionListener, FragmentTwo.OnFragmentTwoInteractionListener
+public class MyActivity extends Activity implements FragmentOne.getZip
 {
 
     private FragmentOne fragOne;
@@ -44,17 +44,5 @@ public class MyActivity extends Activity implements FragmentOne.OnFragmentOneInt
     }
 
     //Override the method here
-    @Override
-    public void onFragmentOneInteraction(String string)
-    {
-        Toast.makeText(getApplicationContext(), string, Toast.LENGTH_LONG).show();
-        FragmentTwo fragmentTwo=
-                (FragmentTwo) getFragmentManager().findFragmentById(R.id.web_request_fragment);
-        fragmentTwo.twiddleEditText(string);
-    }
 
-    public void onFragmentTwoInteraction(Uri uri)
-    {
-        Toast.makeText(getApplicationContext(), "Fragment One", Toast.LENGTH_LONG).show();
-    }
 }

@@ -101,15 +101,20 @@ public class FragmentTwo extends Fragment {
 
             inputStream = entity.getContent();
             // json is UTF-8 by default
-            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"), 8);
-            StringBuilder sb = new StringBuilder();
+            //BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"), 8);
+            String line = "";
+            StringBuilder total = new StringBuilder();
 
-            String line = null;
-            while ((line = reader.readLine()) != null)
-            {
-                sb.append(line + "\n");
+            // Wrap a BufferedReader around the InputStream
+            BufferedReader rd = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
+
+            // Read response until the end
+            while ((line = rd.readLine()) != null) {
+                total.append(line);
             }
-            result = sb.toString();
+
+            // Return full string
+            result = total.toString();
         } catch (Exception e) {
             // Oops
         }
@@ -120,7 +125,10 @@ public class FragmentTwo extends Fragment {
         //jObject = new JSONObject(result);
         //String temperature; String description;
         try {
-            JSONObject jObject = new JSONObject(result);
+
+            JSONObject jObject = new JSONObject(result).getJSONObject("query").getJSONObject("results").
+                    getJSONObject("channel").getJSONObject("item").getJSONObject("condition");
+            //jObject=jObject.getString("results");
             //assert jObject != null;
             String temperature = jObject.getString("temp");
             String description = jObject.getString("text");
@@ -147,11 +155,6 @@ public class FragmentTwo extends Fragment {
         if (mListener != null) {
             mListener.onFragmentTwoInteraction(uri);
         }
-    }
-
-    public void twiddleEditText(String someText)/*figure out what this is*/
-    {
-        textViewF2.setText(someText);
     }
 
     @Override
